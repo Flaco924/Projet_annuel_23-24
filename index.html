@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthPlant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #516951;
+      color: #cbd9cd;
+    }
+    .container {
+      text-align: center;
+      margin-top: 100px;
+    }
+    h1 {
+      font-size: 48px;
+      color: #cbd9cd;
+    }
+    .button {
+      display: inline-block;
+      background-color: #9eb59e;
+      color: #080808;
+      padding: 15px 30px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 18px;
+      margin-top: 30px;
+      transition: background-color 0.3s;
+    }
+    .button:hover {
+      background-color: #8a3df7;
+    }
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #67628b;
+      padding: 20px;
+      border-radius: 10px;
+      color: #cbd9cd;
+      display: none;
+    }
+    #selectedImage {
+      max-width: 100%;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HealthPlant</h1>
+    <input type="file" accept="image/*" id="fileInput" style="display: none;">
+    <label for="fileInput" class="button" id="importButton">Importer une image de votre plante</label>
+    <button class="button" id="processButton" style="display: none; margin-top: 10px;">Lancer l'analyse</button>
+  </div>
+
+  <div id="popup" class="popup">
+    Analyse en cours...
+  </div>
+
+  <!-- Balise pour afficher l'image sélectionnée -->
+  <img id="selectedImage" src="" alt="Image sélectionnée">
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const importButton = document.getElementById('importButton');
+    const popup = document.getElementById('popup');
+    const selectedImage = document.getElementById('selectedImage');
+
+    importButton.addEventListener('click', () => {
+      // Ouvrir la bibliothèque de l'utilisateur pour importer une image
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+      // Afficher le popup "Analyse en cours" et cacher le bouton d'importation
+      popup.style.display = 'block';
+      importButton.style.display = 'none';
+
+      // Charger l'image sélectionnée
+      const selectedFile = fileInput.files[0];
+      if (selectedFile) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          selectedImage.src = event.target.result;
+          selectedImage.style.display = 'block'; // Montrer l'image
+          // Vous pouvez rediriger vers une nouvelle page avec l'image comme paramètre URL
+          // window.location.href = 'afficher_image.html?image=' + encodeURIComponent(event.target.result);
+        };
+        reader.readAsDataURL(selectedFile);
+      }
+    });
+  </script>
+</body>
+</html>
