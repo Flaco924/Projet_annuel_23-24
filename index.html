@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HealthPlant</title>
+  <title>HealthPlant - Image Importée</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -15,85 +15,100 @@
     }
     .container {
       text-align: center;
-      margin-top: 100px;
+      margin-top: 50px;
     }
-    h1 {
-      font-size: 48px;
-      color: #cbd9cd;
-    }
-    .button {
-      display: inline-block;
-      background-color: #9eb59e;
-      color: #080808;
-      padding: 15px 30px;
-      border-radius: 20px;
-      text-decoration: none;
-      font-size: 18px;
-      margin-top: 30px;
-      transition: background-color 0.3s;
-    }
-    .button:hover {
-      background-color: #8a3df7;
-    }
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #67628b;
-      padding: 20px;
+    img {
+      max-width: 80%;
+      max-height: 80vh;
       border-radius: 10px;
-      color: #cbd9cd;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+    form {
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #6a8f6b;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
       display: none;
     }
-    #selectedImage {
-      max-width: 100%;
-      margin-top: 20px;
+    .result-content {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>HealthPlant</h1>
-    <input type="file" accept="image/*" id="fileInput" style="display: none;">
-    <label for="fileInput" class="button" id="importButton">Importer une image de votre plante</label>
-    <button class="button" id="processButton" style="display: none; margin-top: 10px;">Lancer l'analyse</button>
+    <img id="plantImage" src="" alt="Image de la plante">
+    <form id="upload-form" enctype="multipart/form-data">
+      <input type="file" id="file-input" name="file" accept="image/*">
+      <button type="submit">Upload and Analyze</button>
+    </form>
+    <div id="result">
+      <h2>Résultats de l'analyse :</h2>
+      <p id="plant" class="result-content">Plante : <span id="plant-name"></span></p>
+      <p id="probability" class="result-content">Probabilité : <span id="plant-probability"></span></p>
+      <p id="maladie" class="result-content">Maladie : <span id="plant-maladie"></span></p>
+      <p id="description" class="result-content">Description : <span id="plant-description"></span></p>
+      <p id="symptomes" class="result-content">Symptômes : <span id="plant-symptomes"></span></p>
+      <p id="traitement" class="result-content">Traitement : <span id="plant-traitement"></span></p>
+      <p id="prevention" class="result-content">Prévention : <span id="plant-prevention"></span></p>
+      <p id="error-message" class="result-content" style="color: red;"></p>
+    </div>
   </div>
-
-  <div id="popup" class="popup">
-    Analyse en cours...
-  </div>
-
-  <!-- Balise pour afficher l'image sélectionnée -->
-  <img id="selectedImage" src="" alt="Image sélectionnée">
 
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const importButton = document.getElementById('importButton');
-    const popup = document.getElementById('popup');
-    const selectedImage = document.getElementById('selectedImage');
+    document.getElementById('upload-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const fileInput = document.getElementById('file-input');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
 
-    importButton.addEventListener('click', () => {
-      // Ouvrir la bibliothèque de l'utilisateur pour importer une image
-      fileInput.click();
-    });
+      try {
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          body: formData
+        });
 
-    fileInput.addEventListener('change', () => {
-      // Afficher le popup "Analyse en cours" et cacher le bouton d'importation
-      popup.style.display = 'block';
-      importButton.style.display = 'none';
+        const result = await response.json();
 
-      // Charger l'image sélectionnée
-      const selectedFile = fileInput.files[0];
-      if (selectedFile) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          selectedImage.src = event.target.result;
-          selectedImage.style.display = 'block'; // Montrer l'image
-          // Vous pouvez rediriger vers une nouvelle page avec l'image comme paramètre URL
-          // window.location.href = 'afficher_image.html?image=' + encodeURIComponent(event.target.result);
-        };
-        reader.readAsDataURL(selectedFile);
+        if (response.ok) {
+          document.getElementById('result').style.display = 'block';
+          document.getElementById('plant-name').textContent = result.class;
+          document.getElementById('plant-probability').textContent = result.probability.toFixed(2);
+          const info = result.plant_info;
+          document.getElementById('plant-maladie').textContent = info.Maladie || 'N/A';
+          document.getElementById('plant-description').textContent = info.Description || 'N/A';
+          document.getElementById('plant-symptomes').textContent = info.Symptômes || 'N/A';
+          document.getElementById('plant-traitement').textContent = info.Traitement || 'N/A';
+          document.getElementById('plant-prevention').textContent = info.Prévention || 'N/A';
+          document.getElementById('error-message').textContent = '';
+        } else {
+          document.getElementById('result').style.display = 'block';
+          document.getElementById('plant-name').textContent = '';
+          document.getElementById('plant-probability').textContent = '';
+          document.getElementById('plant-maladie').textContent = '';
+          document.getElementById('plant-description').textContent = '';
+          document.getElementById('plant-symptomes').textContent = '';
+          document.getElementById('plant-traitement').textContent = '';
+          document.getElementById('plant-prevention').textContent = '';
+          document.getElementById('error-message').textContent = result.error;
+        }
+      } catch (error) {
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('error-message').textContent = 'Erreur dans l\'analyse de l\'image. Veuillez réessayer.';
+        console.error('Error:', error);
       }
     });
   </script>
