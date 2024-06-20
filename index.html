@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthPlant - Image Importée</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #516951;
+      color: #cbd9cd;
+    }
+    .container {
+      text-align: center;
+      margin-top: 50px;
+    }
+    img {
+      max-width: 80%;
+      max-height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+    form {
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #6a8f6b;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      display: none;
+    }
+    .result-content {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HealthPlant</h1>
+    <img id="plantImage" src="" alt="Image de la plante">
+    <form id="upload-form" enctype="multipart/form-data">
+      <input type="file" id="file-input" name="file" accept="image/*">
+      <button type="submit">Upload and Analyze</button>
+    </form>
+    <div id="result">
+      <h2>Résultats de l'analyse :</h2>
+      <p id="plant" class="result-content">Plante : <span id="plant-name"></span></p>
+      <p id="probability" class="result-content">Probabilité : <span id="plant-probability"></span></p>
+      <p id="maladie" class="result-content">Maladie : <span id="plant-maladie"></span></p>
+      <p id="description" class="result-content">Description : <span id="plant-description"></span></p>
+      <p id="symptomes" class="result-content">Symptômes : <span id="plant-symptomes"></span></p>
+      <p id="traitement" class="result-content">Traitement : <span id="plant-traitement"></span></p>
+      <p id="prevention" class="result-content">Prévention : <span id="plant-prevention"></span></p>
+      <p id="error-message" class="result-content" style="color: red;"></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('upload-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const fileInput = document.getElementById('file-input');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          document.getElementById('result').style.display = 'block';
+          document.getElementById('plant-name').textContent = result.class;
+          document.getElementById('plant-probability').textContent = result.probability.toFixed(2);
+          const info = result.plant_info;
+          document.getElementById('plant-maladie').textContent = info.Maladie || 'N/A';
+          document.getElementById('plant-description').textContent = info.Description || 'N/A';
+          document.getElementById('plant-symptomes').textContent = info.Symptômes || 'N/A';
+          document.getElementById('plant-traitement').textContent = info.Traitement || 'N/A';
+          document.getElementById('plant-prevention').textContent = info.Prévention || 'N/A';
+          document.getElementById('error-message').textContent = '';
+        } else {
+          document.getElementById('result').style.display = 'block';
+          document.getElementById('plant-name').textContent = '';
+          document.getElementById('plant-probability').textContent = '';
+          document.getElementById('plant-maladie').textContent = '';
+          document.getElementById('plant-description').textContent = '';
+          document.getElementById('plant-symptomes').textContent = '';
+          document.getElementById('plant-traitement').textContent = '';
+          document.getElementById('plant-prevention').textContent = '';
+          document.getElementById('error-message').textContent = result.error;
+        }
+      } catch (error) {
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('error-message').textContent = 'Erreur dans l\'analyse de l\'image. Veuillez réessayer.';
+        console.error('Error:', error);
+      }
+    });
+  </script>
+</body>
+</html>
