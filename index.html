@@ -12,16 +12,52 @@
       font-family: 'Montserrat', sans-serif;
       background-color: #516951;
       color: #cbd9cd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .navbar {
+      background-color: #6a8f6b;
+      width: 100%;
+      padding: 10px 0;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+    }
+    .navbar h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #fff;
+    }
+    .instructions {
+      text-align: center;
+      margin-top: 60px;
+      padding: 20px;
+      background-color: #4a5d4a;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 18px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     .container {
       text-align: center;
-      margin-top: 50px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     img {
       max-width: 80%;
       max-height: 80vh;
       border-radius: 10px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      display: none;
+      margin-top: 20px;
     }
     form {
       margin-top: 20px;
@@ -48,11 +84,20 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="navbar">
     <h1>HealthPlant</h1>
+  </div>
+  <div class="instructions">
+    <p>Bienvenue sur Health Plant ! </p>
+    <p> Marre de voir vos plantes mourir sans pouvoir rien y faire ? </p>
+    <p> Importez une image d'une feuille de votre plante pour obtenir son état de santé en un instant.</p>
+  </div>
+  <div class="container">
     <img id="plantImage" src="" alt="Image de la plante">
     <form id="upload-form" enctype="multipart/form-data">
-      <input type="file" id="file-input" name="file" accept="image/*">
+      <input type="file" id="file-input" name="file" accept="image/*" style="display: none;">
+      <label for="file-input" class="button">Choisir une image</label>
+      <br>
       <button type="submit">Upload and Analyze</button>
     </form>
     <div id="result">
@@ -69,6 +114,10 @@
   </div>
 
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('file-input').value = ''; // Clear file input on page load
+    });
+
     document.getElementById('upload-form').addEventListener('submit', async function (event) {
       event.preventDefault();
       const fileInput = document.getElementById('file-input');
@@ -109,6 +158,19 @@
         document.getElementById('result').style.display = 'block';
         document.getElementById('error-message').textContent = 'Erreur dans l\'analyse de l\'image. Veuillez réessayer.';
         console.error('Error:', error);
+      }
+    });
+
+    document.getElementById('file-input').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imgElement = document.getElementById('plantImage');
+          imgElement.src = e.target.result;
+          imgElement.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
       }
     });
   </script>
