@@ -21,7 +21,7 @@ def normalize_class_name(class_name):
 
 # Fonction pour télécharger le modèle depuis Google Drive
 def download_model_from_drive():
-    SERVICE_ACCOUNT_FILE = 'credentials.json'
+    SERVICE_ACCOUNT_FILE = './credentials.json'
     FILE_ID = '1R2D0VkO8E918X-SOoM2gAPotgkez1e_4'
     DESTINATION = 'plant_disease_efficientNetV2_modified2.h5'
 
