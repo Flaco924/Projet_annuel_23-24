@@ -8,12 +8,43 @@ import pandas as pd
 from keras.preprocessing import image
 from keras.applications.efficientnet import preprocess_input
 from flask_cors import CORS
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
+import io
 
 app = Flask(__name__)
 CORS(app)
 
 def normalize_class_name(class_name):
     return class_name.replace('_', ' ').replace('-', ' ').strip().lower()
+
+# Fonction pour télécharger le modèle depuis Google Drive
+def download_model_from_drive():
+    SERVICE_ACCOUNT_FILE = 'credentials.json'
+    FILE_ID = '1R2D0VkO8E918X-SOoM2gAPotgkez1e_4'
+    DESTINATION = 'plant_disease_efficientNetV2_modified2.h5'
+
+    SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+
+    credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+    service = build('drive', 'v3', credentials=credentials)
+
+    request = service.files().get_media(fileId=FILE_ID)
+    fh = io.FileIO(DESTINATION, 'wb')
+    downloader = MediaIoBaseDownload(fh, request)
+
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+        print(f"Download {int(status.progress() * 100)}%.")
+
+    print(f"Le fichier a été téléchargé sous le nom {DESTINATION}")
+
+# Télécharger le modèle
+download_model_from_drive()
 
 # Charger les noms de classes du fichier .pkl
 with open('label_transform.pkl', 'rb') as f:
