@@ -1,4 +1,5 @@
 import os
+import io
 import numpy as np
 import tensorflow as tf
 from flask import Flask, request, jsonify
@@ -11,7 +12,6 @@ from flask_cors import CORS
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-import io
 
 app = Flask(__name__)
 CORS(app)
@@ -21,14 +21,14 @@ def normalize_class_name(class_name):
 
 # Fonction pour télécharger le modèle depuis Google Drive
 def download_model_from_drive():
-    SERVICE_ACCOUNT_FILE = './credentials.json'
+    SERVICE_ACCOUNT_INFO = os.environ.get("SERVICE_ACCOUNT_INFO")
     FILE_ID = '1R2D0VkO8E918X-SOoM2gAPotgkez1e_4'
     DESTINATION = 'plant_disease_efficientNetV2_modified2.h5'
 
     SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    credentials = service_account.Credentials.from_service_account_info(
+        json.loads(SERVICE_ACCOUNT_INFO), scopes=SCOPES)
 
     service = build('drive', 'v3', credentials=credentials)
 
