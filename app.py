@@ -8,43 +8,12 @@ import pandas as pd
 from keras.preprocessing import image
 from keras.applications.efficientnet import preprocess_input
 from flask_cors import CORS
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
-import io
 
 app = Flask(__name__)
 CORS(app)
 
 def normalize_class_name(class_name):
     return class_name.replace('_', ' ').replace('-', ' ').strip().lower()
-
-# Fonction pour télécharger le modèle depuis Google Drive
-def download_model_from_drive():
-    SERVICE_ACCOUNT_FILE = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '/etc/secrets/GOOGLE_CREDENTIALS')
-    FILE_ID = '1R2D0VkO8E918X-SOoM2gAPotgkez1e_4'
-    DESTINATION = 'plant_disease_efficientNetV2_modified2.h5'
-
-    SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-
-    service = build('drive', 'v3', credentials=credentials)
-
-    request = service.files().get_media(fileId=FILE_ID)
-    fh = io.FileIO(DESTINATION, 'wb')
-    downloader = MediaIoBaseDownload(fh, request)
-
-    done = False
-    while not done:
-        status, done = downloader.next_chunk()
-        print(f"Download {int(status.progress() * 100)}%.")
-
-    print(f"Le fichier a été téléchargé sous le nom {DESTINATION}")
-
-# Télécharger le modèle
-download_model_from_drive()
 
 # Charger les noms de classes du fichier .pkl
 with open('label_transform.pkl', 'rb') as f:
@@ -58,15 +27,16 @@ with open('label_transform.pkl', 'rb') as f:
 class_names_normalized = [normalize_class_name(name) for name in class_names]
 
 # Charger le modèle
-model = tf.keras.models.load_model('plant_disease_efficientNetV2_modified2.h5')
+model_path = os.path.join(os.path.dirname(__file__), 'plant_disease_efficientNetV2_modified2.h5')
+model = tf.keras.models.load_model(model_path)
 
 # Charger le fichier CSV
-csv_file_path = './cleaned_plant_care.csv'
+csv_file_path = os.path.join(os.path.dirname(__file__), 'cleaned_plant_care.csv')
 plant_care_df = pd.read_csv(csv_file_path, encoding='ISO-8859-1', delimiter=';')
 plant_care_df['Normalized_Plante'] = plant_care_df['Plante'].apply(normalize_class_name)
 
 # Créer le répertoire des uploads si nécessaire
-UPLOAD_FOLDER = './uploads'
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
@@ -107,9 +77,9 @@ def predict():
                 "Plante": plant_info.get("Plante", "N/A"),
                 "Maladie": plant_info.get("Maladie", "N/A"),
                 "Description": plant_info.get("Description", "N/A"),
-                "Symptômes": plant_info.get("Symptoms", "N/A"),  # Mise à jour
-                "Traitement": plant_info.get("Traitements", "N/A"),  # Mise à jour
-                "Prévention": plant_info.get("Prevention", "N/A")  # Mise à jour
+                "Symptômes": plant_info.get("Symptoms", "N/A"),
+                "Traitement": plant_info.get("Traitements", "N/A"),
+                "Prévention": plant_info.get("Prevention", "N/A")
             }
         }
     else:
