@@ -21,7 +21,7 @@ def normalize_class_name(class_name):
 
 # Fonction pour télécharger le modèle depuis Google Drive
 def download_model_from_drive():
-    SERVICE_ACCOUNT_FILE = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    SERVICE_ACCOUNT_FILE = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '/etc/secrets/GOOGLE_CREDENTIALS')
     FILE_ID = '1R2D0VkO8E918X-SOoM2gAPotgkez1e_4'
     DESTINATION = 'plant_disease_efficientNetV2_modified2.h5'
 
@@ -107,9 +107,9 @@ def predict():
                 "Plante": plant_info.get("Plante", "N/A"),
                 "Maladie": plant_info.get("Maladie", "N/A"),
                 "Description": plant_info.get("Description", "N/A"),
-                "Symptômes": plant_info.get("Symptoms", "N/A"),
-                "Traitement": plant_info.get("Traitements", "N/A"),
-                "Prévention": plant_info.get("Prevention", "N/A")
+                "Symptômes": plant_info.get("Symptoms", "N/A"),  # Mise à jour
+                "Traitement": plant_info.get("Traitements", "N/A"),  # Mise à jour
+                "Prévention": plant_info.get("Prevention", "N/A")  # Mise à jour
             }
         }
     else:
