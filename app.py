@@ -8,6 +8,8 @@ import pandas as pd
 from keras.preprocessing import image
 from keras.applications.efficientnet import preprocess_input
 from flask_cors import CORS
+from keras.layers import BatchNormalization
+import keras
 
 app = Flask(__name__)
 CORS(app)
@@ -26,9 +28,12 @@ with open('label_transform.pkl', 'rb') as f:
 # Normaliser les noms de classes
 class_names_normalized = [normalize_class_name(name) for name in class_names]
 
-# Charger le modèle
+def custom_objects():
+    return {'BatchNormalization': BatchNormalization}
+
+# Charger le modèle avec des objets personnalisés
 model_path = os.path.join(os.path.dirname(__file__), 'plant_disease_efficientNetV2_modified2.h5')
-model = tf.keras.models.load_model(model_path)
+model = tf.keras.models.load_model(model_path, custom_objects=custom_objects())
 
 # Charger le fichier CSV
 csv_file_path = os.path.join(os.path.dirname(__file__), 'cleaned_plant_care.csv')
